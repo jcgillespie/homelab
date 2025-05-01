@@ -1,0 +1,55 @@
+# Define the shared network that other stacks will also connect to
+networks:
+  shared_db_network:
+    # This network needs to be created manually before starting the compose file
+    # using the command: docker network create shared_db_network
+    external: true
+
+# Define the volume for persistent PostgreSQL data
+volumes:
+  postgres_data:
+    # You can leave this empty to use the default driver or specify options
+    # driver: local
+
+services:
+  # Define the PostgreSQL service
+  postgres:
+    # Use the official PostgreSQL image (specify a version for stability)
+    image: postgres:17.4-bookworm # Or postgres:latest, postgres:15, etc.
+    container_name: shared_postgres_db # Optional: Give the container a specific name
+    # Restart policy: Ensures the container restarts if it stops unexpectedly
+    restart: always
+    # Environment variables for PostgreSQL configuration
+    env_file:
+      - .env
+    healthcheck:
+      test:
+        - CMD
+        - pg_isready
+        - -U
+        - ${POSTGRES_USER}
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Mount the named volume to the container's data directory
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./pg-init-scripts:/docker-entrypoint-initdb.d
+    # Connect this service to the shared external network
+    networks:
+      - shared_db_network
+    # Optional: Expose the PostgreSQL port to the host machine.
+    # Only needed for connections from the host or apps outside the shared_db_network.
+    # ports:
+    #  - "5432:5432" # Maps container port 5432 to host port 5432
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+  
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8080:8080

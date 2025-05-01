@@ -1,0 +1,21 @@
+# include:
+#   - ../postgresql/compose.yaml
+services:
+  airtrail:
+    container_name: airtrail
+    image: johly/airtrail:latest
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
+    networks:
+      - shared_db_network
+      - nginx_proxy
+      - default
+networks:
+  shared_db_network:
+    external: true
+  nginx_proxy:
+    external: true
+  default: {}
