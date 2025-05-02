@@ -1,0 +1,11 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/settings/
+
+title: Our Homepage
+description: A simple homepage for our family
+startUrl: https://homepage.awaitwisdom.io
+
+providers:
+  openweathermap: openweathermapapikey
+  weatherapi: weatherapiapikey
