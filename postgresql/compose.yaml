@@ -4,18 +4,25 @@ networks:
     # This network needs to be created manually before starting the compose file
     # using the command: docker network create shared_db_network
     external: true
+  nginx_proxy:
+    # This network needs to be created manually before starting the compose file
+    # if it doesn't exist, you can create with: docker network create nginx_proxy
+    external: true
 
 # Define the volume for persistent PostgreSQL data
 volumes:
   postgres_data:
     # You can leave this empty to use the default driver or specify options
     # driver: local
+  pgadmin_data:
+    # Persistent storage for pgAdmin
+    # driver: local
 
 services:
   # Define the PostgreSQL service
   postgres:
     # Use the official PostgreSQL image (specify a version for stability)
-    image: postgres:17.4-bookworm # Or postgres:latest, postgres:15, etc.
+    image: pgvector/pgvector:pg17 # Or postgres:latest, postgres:15, etc.
     container_name: shared_postgres_db # Optional: Give the container a specific name
     # Restart policy: Ensures the container restarts if it stops unexpectedly
     restart: always
@@ -47,9 +54,19 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-  
-  # adminer:
-  #   image: adminer
-  #   restart: always
-  #   ports:
-  #     - 8080:8080
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin4
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - shared_db_network
+      - nginx_proxy
+    ports:
+      - "5050:${PGADMIN_LISTEN_PORT:-80}"
+    depends_on:
+      - postgres
