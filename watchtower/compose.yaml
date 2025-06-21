@@ -1,7 +1,9 @@
 services:
   watchtower:
-    image: containrrr/watchtower
+    image: nickfedor/watchtower
+    env_file:
+      - .env
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    network_mode: none
     restart: unless-stopped
+    networks: {}
